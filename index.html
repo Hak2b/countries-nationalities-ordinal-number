@@ -197,6 +197,16 @@
             font-size: 1.5rem;
             font-weight: bold;
             margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        #score-container, #question-counter {
+            background-color: #e0e6ec;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
         }
         
         #hint-button {
@@ -210,6 +220,7 @@
             color: var(--secondary-color);
             font-weight: bold;
             min-height: 2rem;
+            user-select: none; /* Ngăn không cho copy gợi ý */
         }
 
         /* Responsive styles */
@@ -303,7 +314,10 @@
 
     <div id="game-screen" class="container">
         <button id="reset-button" class="button secondary" style="position: absolute; top: 1rem; right: 1rem;">Quay lại</button>
-        <div class="score-display">Điểm: <span id="score">0</span></div>
+        <div class="score-display">
+            <span id="score-container">Điểm: <span id="score">0</span></span>
+            <span id="question-counter">Câu: <span id="questions-completed">0</span>/<span id="total-questions">0</span></span>
+        </div>
         <div id="ipa-display"></div>
         <div id="vietnamese-meaning"></div>
         <div id="hint-display"></div>
@@ -416,6 +430,8 @@
         const feedbackSplash = document.getElementById('feedback-splash');
         const feedback = document.getElementById('feedback');
         const scoreDisplay = document.getElementById('score');
+        const questionsCompletedDisplay = document.getElementById('questions-completed');
+        const totalQuestionsDisplay = document.getElementById('total-questions');
         const vietnameseMeaning = document.getElementById('vietnamese-meaning');
         const ipaContainer = document.getElementById('ipa-display');
         const correctAnswerDisplay = document.getElementById('correct-answer-display');
@@ -461,6 +477,7 @@
             gameScreen.style.display = 'block';
             
             updateScore();
+            totalQuestionsDisplay.textContent = shuffledWords.length;
             nextWord();
         }
 
@@ -484,6 +501,7 @@
                 ipaDisplay.textContent = wordData.ipa;
                 vietnameseMeaning.textContent = wordData.meaning;
                 incorrectAttempts = 0;
+                questionsCompletedDisplay.textContent = currentWordIndex + 1;
             } else {
                 endGame();
             }
@@ -512,14 +530,19 @@
                 }, 3000);
             } else {
                 incorrectAttempts++;
-                if (incorrectAttempts >= 2) {
+                if (incorrectAttempts === 1) {
                     feedback.textContent = `Sai rồi! Thử lại (${incorrectAttempts}/2). Nhấn Gợi Ý nếu bạn không biết.`;
                     feedback.style.color = '#dc3545';
                     hintButton.style.display = 'block';
-                } else {
-                    feedback.textContent = `Sai rồi! Thử lại (${incorrectAttempts}/2)`;
-                    feedback.style.color = '#dc3545';
                     wordInput.value = '';
+                } else {
+                    feedback.textContent = `Sai quá 2 lần. Đáp án đúng là: ${correctWord.toUpperCase()}`;
+                    feedback.style.color = '#dc3545';
+                    hintButton.style.display = 'none';
+                    setTimeout(() => {
+                        currentWordIndex++;
+                        nextWord();
+                    }, 2000);
                 }
             }
         }
